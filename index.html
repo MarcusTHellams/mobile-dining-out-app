@@ -1,0 +1,330 @@
+<!doctype html>
+<html ng-app='mthTipApp'>
+    <head>
+    <meta charset="utf-8">
+    <title>Split the Bill</title>
+    <meta
+    name="viewport"
+    content="
+      width=device-width,
+      initial-scale=1,
+      minimum-scale=1,
+      maximum-scale=1
+    "
+  />
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" media="all" />
+    <link rel="stylesheet" href="js/vendors/xeditable/xeditable.css" />
+     <link rel="stylesheet" href="js/vendors/snap.js/css/snap.css" />
+     <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet">
+     <link rel="stylesheet" href="css/notification.css" />
+	
+    <style>
+body {
+    padding: 55px 0 0 0;
+}
+
+.editable-click,
+a.editable-click {
+    border-bottom: none;
+    color: inherit;
+    text-decoration: none;
+}
+
+.editable-click:hover,
+a.editable-click:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+.center-block {
+    display: block;
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.no-bottom-margin {
+    margin-bottom: 0;
+}
+
+.delete {
+    position: relative;
+    z-index: 100;
+    cursor: pointer;
+}
+ @media screen and (max-width: 768px) {
+
+td,
+th {
+    display: block;
+}
+}
+
+.navbar-inverse  .navbar-form  .checkbox {
+    color: #999999;
+}
+
+.navbar-inverse  .navbar-form  .checkbox:hover {
+    color: #fff;
+}
+
+.navbar-header {
+    float: left;
+    padding: 15px;
+    text-align: center;
+    width: 100%;
+}
+.navbar-brand {float:none;}
+
+#left-opener {
+  color:#999999; 
+}
+
+#left-opener:hover {
+  color:#fff; 
+}
+
+.snap-content{
+ 	background:#fff;
+    top: 61px;
+   /* position: relative;  */
+}
+
+.snap-drawers {
+ /* overflow-x: hidden;
+  overflow-y: scroll;
+  position: fixed;*/
+  background-color: #CCCCCC;
+}
+
+
+.snap-drawer {
+  padding: 91px 0 0 10px;
+  
+}
+
+.snap-drawer.snap-drawer-left {
+  /*padding-right: 30px;*/
+}
+
+.inline{
+ 	display:inline;   
+}
+
+</style>
+    </head>
+    <body ng-controller='tipController'>
+
+    <div class="snap-drawers">
+            <div class="snap-drawer snap-drawer-left">
+                <div>
+                
+                 <form class="form">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" ng-model='dB.includeTip'> <span class="btn btn-default">Include Tip</span>
+            </label>
+          </div>
+          &nbsp;&nbsp;
+           <div class="checkbox">
+            <label>
+              <input type="checkbox" ng-model='dB.includeTax'> <span class="btn btn-default">Include Tax</span>
+            </label>
+          </div>
+            
+        
+       
+        
+       <select class="form-control scrollTo" ng-model="blank" ng-options="c.name | removeClickToEnter for c in customers().get() track by '#customer-'+c.id">
+       <option value="">Select a Customer</option>
+
+		</select>
+          <br />
+          
+             
+       <select class="form-control scrollTo" ng-model="blank2" ng-options="c.name | removeClickShared2 for c in charges({sharedCharge: true}).get() track by '#charge-'+c.id">
+       <option value="">Select a Charge</option>
+
+		</select>
+        
+          
+        </form>
+                  
+                </div>
+            </div><!--snap-drawer-left-->
+        </div><!--end of snap-drawers-->
+    
+    
+    
+    
+    
+ 
+  
+    <div role="navigation" class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+         
+        
+          <a href="#" class="navbar-brand"><strong>SPLIT THE BILL</strong></a>  <p class="inline"><a id="left-opener" href="javascript:void(0);"><span class="sr-only">Toggle Left side menu</span><i class="fa fa-reorder fa-2x"></i></a></p>
+        </div>
+        
+      </div>
+    </div><!--nav-bar-->
+  <div class="snap-content scrollable" id="snap-content">   
+    <div class="jumbotron">
+    	<div class="container">
+        	<h1 class="text-center">SPLIT THE BILL<br>
+<small>The only app you will ever need to split the restaurant bill accurately in a small, medium, or large group!</small></h1>
+        </div>
+    </div>
+        <div id="main_container" class="container">
+            <div class="row">
+                <div class="col-sm-7 center-block">
+                    <p><strong>If you are including tax in your bill figure out the tax percentage by entering the sub-total and the tax amount from your bill.</strong></p>
+                    <form>
+                        <div class="form-group">
+                            <label for="sub_total">Sub-total</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-addon">$</span>
+                                <input ng-model='subTotal' type="text" class="form-control" id="sub_total" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tax_total">Tax</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-addon">$</span>
+                                <input  ng-model='taxTotal' type="text"  class="form-control" id="tax_total" placeholder="0.00">
+                            </div>
+                        </div>
+                    </form>
+                    <form  class="">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model='dB.includeTip'>
+                               <span class="btn btn-primary">Include Tip</span> </label>
+                            <!--end of checkbox-->
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group input-group-lg" ng-show="dB.includeTip">
+                                <input ng-model='dB.tipPercentage' type="text"  class="form-control" id="tip" placeholder="Tip Percentage (EX: 15)" >
+                                <span class="input-group-addon">%</span>
+                            </div>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model='dB.includeTax'>
+                               <span class="btn btn-primary"> Include Tax</span> </label>
+                            <!--end of checkbox-->
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group input-group-lg" ng-show='dB.includeTax'>
+                                <input ng-model='dB.taxPercentage' type="text" class="form-control" id="tax" placeholder="Tax Percentage (EX: 15)">
+                                <span class="input-group-addon">%</span>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="panel panel-primary" ng-repeat='customer in customers().get()'>
+                    <a name="customer-{{customer.id}}"></a>
+                        <div class="panel-heading">
+                            <h4 class="panel-title"><span buttons="no" toggle-val="{{customer.name}}" editable-text="customer.name">{{customer.name}}</span><i class="delete glyphicon glyphicon-remove pull-right" ng-click="dB.removeCustomer(customer.id)"></i></h4>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table no-bottom-margin">
+                                <tr ng-repeat="charge in charges({customer_id: customer.id}).get()">
+                                    <td><div ng-if="charge.noEdit">
+                                            {{charge.charge | currency}}
+                                        </div>
+                                        <div ng-if="!charge.noEdit">
+                                            <span toggle-val="{{charge.charge}}" editable-text="charge.charge" buttons="no" onshow="killer()">{{charge.charge | formatCharges}}</span>
+                                        </div></td>
+                                    <td class="text-right"><div ng-if="charge.noEdit" class="text-center">
+                                            {{charge.name | removeClickShared}}Shared Charge
+                                        </div>
+                                        <div ng-if="!charge.noEdit">
+                                            <button class="btn btn-danger btn-block" ng-click='dB.deleteCharge(charge.id, customer.id)'>Delete This Charge</button>
+                                        </div></td>
+                                </tr>
+                                <tr ng-show='dB.includeTax'>
+                                    <td colspan="2">Tax: {{dB.getTax(customer.id) | currency}}</td>
+                                </tr>
+                                <tr ng-show='dB.includeTip'>
+                                    <td colspan="2">Tip: {{dB.getTip(customer.id) | currency}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Total: {{dB.returnCost(customer.id) | currency}}</th>
+                                    <td class="text-right"><button class="btn btn-success btn-block" ng-click='dB.addCharge(customer.id, "0")'> Add Another Charge</button></td>
+                                </tr>
+                            </table>
+                            <!--end of panel-body-->
+                        </div>
+                        <!--end of panel primary-->
+                    </div>
+                    <p class="text-right">
+                        <button class="btn btn-success" ng-click='dB.addCustomer()'> Add Another Customer</button>
+                    </p>
+                    <hr />
+                    <div class="shared-charge" ng-repeat="charge in charges({sharedCharge:true}).get()">
+                    <a name="charge-{{charge.id}}"></a>
+                        <div class="panel panel-primary sharedCharge-{{charge.id}}">
+                            <div class="panel-heading">
+                                <h4 class="panel-title"><span toggle-val="{{charge.name}}"  buttons="no" editable-text="charge.name" onaftersave="dB._distributeShargeCharge(charge.id, charge.charge)">{{charge.name}}</span> <i ng-click="dB.deleteSharedCharge(charge.id)" class="delete glyphicon glyphicon-remove pull-right"></i></h4>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form">
+                                    <label for="sharedCharge">Charge</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-addon">$</span>
+                                        <input type="text"  class="form-control" name="sharedCharge" placeholder="0.00" ng-model="charge.charge"  ng-keyup="dB.updateSharedChargeCharge(charge.id,$event)" />
+                                    </div>
+                                    <br />
+                                    <p><button class="btn btn-info" ng-click="dB.checkAll(charge.id)">CHECK ALL</button>&nbsp;&nbsp;<button class="btn btn-info" ng-click="dB.unCheckAll(charge.id)">UNCHECK ALL</button></p>
+                                    
+                                    <div class="checkbox" ng-repeat="customer in customers().get()">
+                                    
+                                    
+                                    
+                                    
+                                        <label>
+                                            <input class="customer-{{customer.id}}-charge-{{charge.id}}" type="checkbox"  ng-click="dB.addCustomerToSharedCharge(customer.id, charge.id, $event, charge.charge)" checklist-model="charge.sharedCustomers" checklist-value="customer.id">
+                                            <div class="btn btn-primary">
+{{customer.name | removeClickToEnter}} 
+</div></label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!--end of panel-->
+                        </div>
+                        <!--end of class=shared-charge-->
+                    </div>
+                    <p class="text-right">
+                        <button class="btn btn-primary" ng-click='dB.addASharedCharge()'>Add a Shared Charge</button>
+                    </p>
+                    <!--end of col-sm-7-->
+                </div>
+                <!-- end of row-->
+            </div>
+        </div>
+</div><!--end of snap-content-->
+        <script src="js/vendors/jquery/jquery-1.11.1.min.js"></script>
+        <script src="http://underscorejs.org/underscore-min.js"></script>
+        <script src="http://backbonejs.org/backbone-min.js"></script>
+        <script src="cordova.js"></script>
+        <script src="js/vendors/snap.js/js/snap.min.js"></script>
+        <script src="js/vendors/jquery.toggleval.js"></script>
+        <script src="js/vendors/underscore/underscore-min.js"></script> 
+        <script src="js/vendors/taffydb/taffy-min.js"></script> 
+        <script src="bootstrap/js/bootstrap.min.js"></script> 
+        <script src="js/vendors/angularjs/angular.min.js"></script> 
+        <script src="js/directives/checklist-model.js"></script> 
+        <script src="js/vendors/xeditable/xeditable.js"></script> 
+        <!--<script src="http://code.angularjs.org/1.2.16/angular-cookies.min.js"></script> 
+        <script src="http://code.angularjs.org/1.2.16/angular-touch.min.js"></script> 
+        <script src="http://code.angularjs.org/1.2.16/angular-route.min.js"></script> -->
+        <script src="js/filters/formatCharges.js"></script> 
+        <script src="js/app.js"></script> 
+        <script src="js/directives/toggleval.js"></script>
+        <script src="js/services/database.js"></script> 
+        <script src="js/controllers/tipController.js"></script>
+    </body>
+</html>
